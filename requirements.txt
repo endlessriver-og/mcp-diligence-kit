@@ -1,0 +1,7 @@
+anyio==4.15.1
+claude-agent-sdk==0.2.157
+httpx==0.28.1
+mcp==2.2.0
+PyJWT==2.14.0
+pytest==9.1.1
+uvicorn==0.53.0
