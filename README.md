@@ -51,6 +51,7 @@ export MCP_JWT_SECRET=$(python3 -c 'import secrets;print(secrets.token_hex(32))'
 .venv/bin/python evals/run_evals.py --model claude-sonnet-5
 .venv/bin/python evals/run_evals.py --model claude-haiku-4-5-20251001   # same cases, cheaper tier
 ./n8n/smoke_test.sh                                # throwaway self-hosted n8n, no LLM needed
+./n8n/webhook_auth_check.sh                        # webhook auth contract: 403 / 403 / 502
 ```
 
 The agent and evals need a logged-in `claude` CLI or `ANTHROPIC_API_KEY`. Tests and the n8n smoke run need neither.
@@ -59,6 +60,7 @@ The agent and evals need a logged-in `claude` CLI or `ANTHROPIC_API_KEY`. Tests 
 
 - `n8n/diligence-agent-mcp.json`: Webhook (header auth) → **AI Agent** (Claude + **MCP Client Tool**, read tools only) → extract citations → **MCP Client** node fetches every cited page → Code node verifies each quote → `200 draft` / `422 needs review` / `502 agent failed`. The agent node retries 3× with a 5s wait, then goes down an error branch; it never fails silently.
 - `n8n/diligence-mcp-healthcheck.json`: every 15 minutes, call `list_documents` and **assert on the content** (at least one document came back), not on node status.
+- `n8n/webhook_auth_check.sh`: installs the agent workflow into a throwaway n8n, publishes it and calls the live webhook. Measured on 2.37.10: **403** with no token, **403** with a wrong token, and **502 `{"status":"error","error":"agent failed after 3 tries"}`** with a valid token and a placeholder model key. The failure is reported, not swallowed.
 - `n8n/smoke_test.sh`: imports both workflows and credentials into a throwaway n8n 2.37.10 and runs the health check twice. With a valid token it passes. After rotating the server secret, the error branch fires.
 
 ### Two n8n 2.37.10 behaviors worth knowing (#1 reproduced by the smoke run; #2 read from source, not yet reproduced)
