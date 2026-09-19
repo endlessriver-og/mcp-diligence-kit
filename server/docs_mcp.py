@@ -50,6 +50,8 @@ class JwtVerifier:
     """HS256 for the demo; production swaps in the IdP's JWKS (RS256) with the same checks."""
 
     def __init__(self, secret: str, audience: str, issuer: str):
+        if len(secret) < 32:  # RFC 7518 3.2: an HMAC key below the hash size weakens every token
+            raise SystemExit("MCP_JWT_SECRET must be at least 32 characters")
         self.secret, self.audience, self.issuer = secret, audience, issuer
 
     async def verify_token(self, token: str) -> AccessToken | None:

@@ -45,7 +45,7 @@ flowchart LR
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 export MCP_JWT_SECRET=$(python3 -c 'import secrets;print(secrets.token_hex(32))')
 
-.venv/bin/python -m pytest -q                      # 15 tests, no model calls
+.venv/bin/python -m pytest -q                      # 16 tests, no model calls
 .venv/bin/python server/docs_mcp.py &              # MCP server on 127.0.0.1:8765/mcp
 .venv/bin/python agent/diligence.py "Compare the landlord redline v2 against the executed Parcel 7 lease. Which economic terms moved?"
 .venv/bin/python evals/run_evals.py --model claude-sonnet-5

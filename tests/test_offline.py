@@ -72,3 +72,11 @@ def test_scorer():
     assert all(score(case, good).values())
     bad = {**good, "needs_human_review": False}
     assert not score(case, bad)["review"]
+
+
+def test_weak_signing_secret_is_refused():
+    import pytest
+    from docs_mcp import JwtVerifier
+    with pytest.raises(SystemExit):
+        JwtVerifier("short", "http://a/mcp", "http://i")
+    assert JwtVerifier("x" * 32, "http://a/mcp", "http://i")
