@@ -61,7 +61,7 @@ The agent and evals need a logged-in `claude` CLI or `ANTHROPIC_API_KEY`. Tests 
 - `n8n/diligence-mcp-healthcheck.json`: every 15 minutes, call `list_documents` and **assert on the content** (at least one document came back), not on node status.
 - `n8n/smoke_test.sh`: imports both workflows and credentials into a throwaway n8n 2.37.10 and runs the health check twice. With a valid token it passes. After rotating the server secret, the error branch fires.
 
-### Two things the smoke run caught (n8n 2.37.10, read from source and reproduced)
+### Two n8n 2.37.10 behaviors worth knowing (#1 reproduced by the smoke run; #2 read from source, not yet reproduced)
 
 1. **A failed node can report success.** The first version used `{{ $env.DILIGENCE_MCP_URL }}` for the endpoint. n8n 2.x blocks `$env` in expressions by default (`N8N_BLOCK_ENV_ACCESS_IN_NODE`). With `onError: continueErrorOutput`, an error thrown while resolving a node parameter, *before* the per-item loop, sent the input item down the **success** output. The execution status was `success` and it ended on the "Healthy" node. The MCP call never happened: the node failed while resolving its endpoint URL, before it opened a connection. That is why the health check now asserts on returned content.
 2. **Retry only inspects the first item.** `workflow-execute.js` decides whether to retry with `data[0][0].json.error`. With `continueErrorOutput`, a batch where item 1 succeeds and item 2 fails is not retried.
